@@ -78,28 +78,43 @@ def add_order(customer_id, square_meters, price_per_meter, banner_dimensions,
     conn = get_db_connection()
     cur = conn.cursor()
 
-    total_price = square_meters * price_per_meter + banner_price + delivery_price
+    # Ensure all values are float for calculation
+    square_meters = float(square_meters)
+    price_per_meter = float(price_per_meter)
+    banner_price = float(banner_price)
+    delivery_price = float(delivery_price)
 
-    cur.execute('''INSERT INTO orders 
-                   (customer_id, square_meters, price_per_meter, banner_price,
-                    delivery_price, total_price, banner_dimensions,
-                    delivery_status, installation_status, order_date)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                (customer_id, square_meters, price_per_meter, banner_price,
-                 delivery_price, total_price, banner_dimensions,
-                 delivery_status, installation_status, datetime.now().date()))
+    # Calculate total price
+    total_price = banner_price + delivery_price + (square_meters * price_per_meter)
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    try:
+        cur.execute('''INSERT INTO orders 
+                       (customer_id, square_meters, price_per_meter, banner_price,
+                        delivery_price, total_price, banner_dimensions,
+                        delivery_status, installation_status, order_date)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                    (customer_id, square_meters, price_per_meter, banner_price,
+                     delivery_price, total_price, banner_dimensions,
+                     delivery_status, installation_status, datetime.now().date()))
+        conn.commit()
+    except Exception as e:
+        print(f"Error in add_order: {str(e)}")
+        raise e
+    finally:
+        cur.close()
+        conn.close()
 
 def get_orders():
     """Get all orders with customer names"""
     conn = get_db_connection()
     df = pd.read_sql_query("""
-        SELECT o.*, c.name as customer_name
+        SELECT 
+            o.*,
+            c.name as customer_name,
+            o.banner_price + o.delivery_price + (o.square_meters * o.price_per_meter) as total_amount
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
+        ORDER BY o.order_date DESC
     """, conn)
     conn.close()
     return df
@@ -110,7 +125,7 @@ def add_payment(order_id, amount):
     cur = conn.cursor()
     cur.execute('''INSERT INTO payments (order_id, amount, payment_date)
                    VALUES (%s, %s, %s)''', 
-                (order_id, amount, datetime.now().date()))
+                (order_id, float(amount), datetime.now().date()))
     conn.commit()
     cur.close()
     conn.close()
@@ -123,6 +138,7 @@ def get_payments():
         FROM payments p
         JOIN orders o ON p.order_id = o.id
         JOIN customers c ON o.customer_id = c.id
+        ORDER BY p.payment_date DESC
     """, conn)
     conn.close()
     return df

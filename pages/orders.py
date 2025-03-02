@@ -56,13 +56,13 @@ with st.form("new_order"):
                 customer_id = int(customers_df[customers_df['name'] == customer]['id'].iloc[0])
                 add_order(
                     customer_id=customer_id,
-                    square_meters=float(banner_area),
-                    price_per_meter=float(banner_price_per_meter),
+                    square_meters=banner_area,
+                    price_per_meter=banner_price_per_meter,
                     banner_dimensions=banner_dimensions,
                     delivery_status=delivery_status,
                     installation_status=installation_status,
-                    banner_price=float(banner_price),
-                    delivery_price=float(delivery_price)
+                    banner_price=banner_price,
+                    delivery_price=delivery_price
                 )
                 st.success("Buyurtma muvaffaqiyatli qo'shildi!")
             except Exception as e:
@@ -76,16 +76,24 @@ orders_df = get_orders()
 if not orders_df.empty:
     # Format the display columns
     display_df = orders_df.copy()
-    display_df['total_price'] = display_df['total_price'].apply(format_currency)
+
+    # Format currency columns
+    currency_columns = ['banner_price', 'delivery_price', 'total_price']
+    for col in currency_columns:
+        if col in display_df.columns:
+            display_df[col] = display_df[col].apply(format_currency)
+
+    # Select and rename columns for display
     display_df = display_df[[
-        'customer_name', 'banner_dimensions', 'total_price',
-        'delivery_status', 'installation_status', 'order_date'
+        'customer_name', 'banner_dimensions', 'banner_price',
+        'delivery_price', 'total_price', 'delivery_status',
+        'installation_status', 'order_date'
     ]]
 
-    # Rename columns for better display
     display_df.columns = [
-        'Mijoz', 'Banner o\'lchamlari', 'Jami narx',
-        'Yetkazish holati', 'O\'rnatish holati', 'Sana'
+        'Mijoz', 'Banner o\'lchamlari', 'Banner narxi',
+        'Yetkazish narxi', 'Jami narx', 'Yetkazish holati',
+        'O\'rnatish holati', 'Sana'
     ]
 
     st.dataframe(display_df)
