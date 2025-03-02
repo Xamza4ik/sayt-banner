@@ -6,6 +6,14 @@ from datetime import datetime, timedelta
 def calculate_price(square_meters, price_per_meter):
     return square_meters * price_per_meter
 
+def calculate_banner_dimensions(width, height):
+    """Banner o'lchamlarini hisoblash"""
+    return width * height, f"{width}x{height}"
+
+def calculate_banner_price(banner_area, price_per_meter):
+    """Banner narxini hisoblash"""
+    return banner_area * price_per_meter
+
 def format_currency(amount):
     return f"{amount:,.2f} so'm"
 
