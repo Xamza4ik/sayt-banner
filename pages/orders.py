@@ -25,7 +25,7 @@ with st.form("new_order"):
         delivery_status = st.selectbox("Yetkazib berish holati",
                                      ["Kutilmoqda", "Yetkazilmoqda", "Yetkazildi"])
         installation_status = st.selectbox("O'rnatish holati",
-                                         ["Kutilmoqda", "Jarayonda", "O'rnatildi"])
+                                          ["Kutilmoqda", "Jarayonda", "O'rnatildi"])
 
     # Calculate banner dimensions and price
     banner_area, banner_dimensions = calculate_banner_dimensions(banner_width, banner_height)
@@ -41,16 +41,16 @@ with st.form("new_order"):
 
     if st.form_submit_button("Buyurtma qo'shish"):
         if customer and banner_width > 0 and banner_height > 0 and banner_price_per_meter > 0:
-            customer_id = customers_df[customers_df['name'] == customer]['id'].iloc[0]
+            customer_id = int(customers_df[customers_df['name'] == customer]['id'].iloc[0])
             add_order(
                 customer_id=customer_id,
-                square_meters=banner_area,
-                price_per_meter=banner_price_per_meter,
+                square_meters=float(banner_area),
+                price_per_meter=float(banner_price_per_meter),
                 banner_dimensions=banner_dimensions,
                 delivery_status=delivery_status,
                 installation_status=installation_status,
-                banner_price=banner_price,
-                delivery_price=delivery_price
+                banner_price=float(banner_price),
+                delivery_price=float(delivery_price)
             )
             st.success("Buyurtma muvaffaqiyatli qo'shildi!")
         else:
@@ -63,7 +63,6 @@ if not orders_df.empty:
     # Format the display columns
     display_df = orders_df.copy()
     display_df['total_price'] = display_df['total_price'].apply(format_currency)
-    display_df['price_per_meter'] = display_df['price_per_meter'].apply(format_currency)
     display_df = display_df[[
         'customer_name', 'banner_dimensions', 'total_price',
         'delivery_status', 'installation_status', 'order_date'
