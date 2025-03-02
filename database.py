@@ -5,7 +5,7 @@ from datetime import datetime
 def init_db():
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
-    
+
     # Customers table
     c.execute('''CREATE TABLE IF NOT EXISTS customers
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,20 +13,22 @@ def init_db():
                   phone TEXT NOT NULL,
                   workplace TEXT,
                   registration_date DATE)''')
-    
+
     # Orders table
     c.execute('''CREATE TABLE IF NOT EXISTS orders
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   customer_id INTEGER,
                   square_meters REAL,
                   price_per_meter REAL,
+                  banner_price REAL,
+                  delivery_price REAL,
                   total_price REAL,
                   banner_dimensions TEXT,
                   delivery_status TEXT,
                   installation_status TEXT,
                   order_date DATE,
                   FOREIGN KEY (customer_id) REFERENCES customers (id))''')
-    
+
     # Payments table
     c.execute('''CREATE TABLE IF NOT EXISTS payments
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,14 +36,14 @@ def init_db():
                   amount REAL,
                   payment_date DATE,
                   FOREIGN KEY (order_id) REFERENCES orders (id))''')
-    
+
     # Expenses table
     c.execute('''CREATE TABLE IF NOT EXISTS expenses
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   description TEXT,
                   amount REAL,
                   expense_date DATE)''')
-    
+
     conn.commit()
     conn.close()
 
@@ -62,24 +64,21 @@ def get_customers():
     conn.close()
     return df
 
-def add_order(customer_id, square_meters, price_per_meter, banner_dimensions, delivery_status, installation_status):
+def add_order(customer_id, square_meters, price_per_meter, banner_dimensions, 
+              delivery_status, installation_status, banner_price=0, delivery_price=0):
     conn = get_db()
     c = conn.cursor()
-    total_price = square_meters * price_per_meter
-    c.execute('''INSERT INTO orders 
-                 (customer_id, square_meters, price_per_meter, total_price, 
-                  banner_dimensions, delivery_status, installation_status, order_date)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-              (customer_id, square_meters, price_per_meter, total_price,
-               banner_dimensions, delivery_status, installation_status, datetime.now().date()))
-    conn.commit()
-    conn.close()
+    material_price = square_meters * price_per_meter
+    total_price = material_price + banner_price + delivery_price
 
-def add_payment(order_id, amount):
-    conn = get_db()
-    c = conn.cursor()
-    c.execute('''INSERT INTO payments (order_id, amount, payment_date)
-                 VALUES (?, ?, ?)''', (order_id, amount, datetime.now().date()))
+    c.execute('''INSERT INTO orders 
+                 (customer_id, square_meters, price_per_meter, banner_price,
+                  delivery_price, total_price, banner_dimensions,
+                  delivery_status, installation_status, order_date)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+              (customer_id, square_meters, price_per_meter, banner_price,
+               delivery_price, total_price, banner_dimensions,
+               delivery_status, installation_status, datetime.now().date()))
     conn.commit()
     conn.close()
 
