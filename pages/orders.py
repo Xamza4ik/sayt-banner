@@ -16,43 +16,57 @@ with st.form("new_order"):
     col1, col2 = st.columns(2)
     with col1:
         # Banner o'lchamlari
-        banner_width = st.number_input("Banner eni (metr)", min_value=0.0)
-        banner_height = st.number_input("Banner bo'yi (metr)", min_value=0.0)
-        banner_price_per_meter = st.number_input("Banner 1 kv.m narxi", min_value=0.0)
+        st.subheader("Banner o'lchamlari")
+        banner_width = st.number_input("Banner eni (metr)", min_value=0.0, step=0.1)
+        banner_height = st.number_input("Banner bo'yi (metr)", min_value=0.0, step=0.1)
+        banner_price_per_meter = st.number_input("Banner 1 kv.m narxi (so'm)", min_value=0.0, step=1000.0)
 
     with col2:
-        delivery_price = st.number_input("Yetkazib berish narxi", min_value=0.0)
+        st.subheader("Qo'shimcha xizmatlar")
+        delivery_price = st.number_input("Yetkazib berish narxi (so'm)", min_value=0.0, step=1000.0)
         delivery_status = st.selectbox("Yetkazib berish holati",
                                      ["Kutilmoqda", "Yetkazilmoqda", "Yetkazildi"])
         installation_status = st.selectbox("O'rnatish holati",
-                                          ["Kutilmoqda", "Jarayonda", "O'rnatildi"])
+                                         ["Kutilmoqda", "Jarayonda", "O'rnatildi"])
 
     # Calculate banner dimensions and price
     banner_area, banner_dimensions = calculate_banner_dimensions(banner_width, banner_height)
     banner_price = calculate_banner_price(banner_area, banner_price_per_meter)
+    total_price = banner_price + delivery_price
 
     # Show price breakdown
-    st.write("Narxlar tafsiloti:")
-    st.write(f"Banner o'lchami: {banner_dimensions} metr")
-    st.write(f"Banner maydoni: {banner_area:.2f} kv.metr")
-    st.write(f"Banner narxi: {format_currency(banner_price)}")
-    st.write(f"Yetkazib berish: {format_currency(delivery_price)}")
-    st.write(f"Jami narx: {format_currency(banner_price + delivery_price)}")
+    st.subheader("Narxlar tafsiloti:")
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.write("Banner tafsilotlari:")
+        st.write(f"📏 O'lchami: {banner_dimensions} metr")
+        st.write(f"📐 Maydoni: {banner_area:.2f} kv.metr")
+        st.write(f"💰 1 kv.m narxi: {format_currency(banner_price_per_meter)}")
+
+    with col4:
+        st.write("Narxlar:")
+        st.write(f"🎨 Banner narxi: {format_currency(banner_price)}")
+        st.write(f"🚚 Yetkazib berish: {format_currency(delivery_price)}")
+        st.write(f"💵 Jami: {format_currency(total_price)}")
 
     if st.form_submit_button("Buyurtma qo'shish"):
         if customer and banner_width > 0 and banner_height > 0 and banner_price_per_meter > 0:
-            customer_id = int(customers_df[customers_df['name'] == customer]['id'].iloc[0])
-            add_order(
-                customer_id=customer_id,
-                square_meters=float(banner_area),
-                price_per_meter=float(banner_price_per_meter),
-                banner_dimensions=banner_dimensions,
-                delivery_status=delivery_status,
-                installation_status=installation_status,
-                banner_price=float(banner_price),
-                delivery_price=float(delivery_price)
-            )
-            st.success("Buyurtma muvaffaqiyatli qo'shildi!")
+            try:
+                customer_id = int(customers_df[customers_df['name'] == customer]['id'].iloc[0])
+                add_order(
+                    customer_id=customer_id,
+                    square_meters=float(banner_area),
+                    price_per_meter=float(banner_price_per_meter),
+                    banner_dimensions=banner_dimensions,
+                    delivery_status=delivery_status,
+                    installation_status=installation_status,
+                    banner_price=float(banner_price),
+                    delivery_price=float(delivery_price)
+                )
+                st.success("Buyurtma muvaffaqiyatli qo'shildi!")
+            except Exception as e:
+                st.error(f"Xatolik yuz berdi: {str(e)}")
         else:
             st.error("Barcha maydonlarni to'ldiring!")
 

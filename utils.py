@@ -8,14 +8,19 @@ def calculate_price(square_meters, price_per_meter):
 
 def calculate_banner_dimensions(width, height):
     """Banner o'lchamlarini hisoblash"""
-    return width * height, f"{width}x{height}"
+    area = float(width) * float(height)  # Maydonni float sifatida hisoblash
+    dimensions = f"{width}x{height}"  # O'lchamlarni saqlash
+    return area, dimensions
 
 def calculate_banner_price(banner_area, price_per_meter):
     """Banner narxini hisoblash"""
-    return banner_area * price_per_meter
+    return float(banner_area) * float(price_per_meter)  # Narxni float sifatida hisoblash
 
 def format_currency(amount):
-    return f"{amount:,.2f} so'm"
+    """Pulni formatlash"""
+    if amount is None:
+        return "0.00 so'm"
+    return f"{float(amount):,.2f} so'm"
 
 def create_daily_revenue_chart(payments_df):
     daily_revenue = payments_df.groupby('payment_date')['amount'].sum().reset_index()
