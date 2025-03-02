@@ -32,7 +32,7 @@ with st.form("new_order"):
     # Calculate banner dimensions and price
     banner_area, banner_dimensions = calculate_banner_dimensions(banner_width, banner_height)
     banner_price = calculate_banner_price(banner_area, banner_price_per_meter)
-    total_price = banner_price + delivery_price
+    total_price = banner_price + delivery_price  # Faqat banner narxi va yetkazib berish narxini qo'shamiz
 
     # Show price breakdown
     st.subheader("Narxlar tafsiloti:")

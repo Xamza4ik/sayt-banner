@@ -84,8 +84,8 @@ def add_order(customer_id, square_meters, price_per_meter, banner_dimensions,
     banner_price = float(banner_price)
     delivery_price = float(delivery_price)
 
-    # Calculate total price
-    total_price = banner_price + delivery_price + (square_meters * price_per_meter)
+    # Calculate total price - faqat banner narxi va yetkazib berish narxini qo'shamiz
+    total_price = banner_price + delivery_price
 
     try:
         cur.execute('''INSERT INTO orders 
@@ -111,7 +111,7 @@ def get_orders():
         SELECT 
             o.*,
             c.name as customer_name,
-            o.banner_price + o.delivery_price + (o.square_meters * o.price_per_meter) as total_amount
+            o.banner_price + o.delivery_price as total_amount
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
         ORDER BY o.order_date DESC
